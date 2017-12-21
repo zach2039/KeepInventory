@@ -76,6 +76,7 @@
     <Compile Include="Evnts\KeepInventoryEventHandler.cs" />
     <Compile Include="KeepInventoryPlugin.cs" />
     <Compile Include="Mngr\KeepInventoryManager.cs" />
+    <Compile Include="Netwrk\KeepInventoryMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
