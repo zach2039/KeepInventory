@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<PluginManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Name>Keep Inventory</Name>
+  <Repository>Zach2039/KeepInventory</Repository>
+  <Guid>53c5d8fb-4967-4ee2-8d26-7ff3f22137fe</Guid>
+  <Version>1.0.0</Version>
+</PluginManifest>

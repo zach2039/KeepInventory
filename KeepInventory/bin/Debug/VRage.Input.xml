@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>VRage.Input</name>
+    </assembly>
+    <members>
+        <member name="M:VRage.ModAPI.IMyControl.GetAnalogState">
+            <summary>
+            Return the analog state between 0 (not pressed at all) and 1 (fully pressed).
+            If a digital button is mapped to an analog control, it can return only 0 or 1.
+            </summary>
+        </member>
+        <member name="M:VRage.Input.MyControl.GetAnalogState">
+            <summary>
+            Return the analog state between 0 (not pressed at all) and 1 (fully pressed).
+            If a digital button is mapped to an analog control, it can return only 0 or 1.
+            </summary>
+        </member>
+        <member name="M:VRage.Input.MyControl.ToString">
+            <summary>
+            Causes allocation. Creates single string with list of assigned controls.
+            </summary>
+        </member>
+        <member name="M:VRage.Input.MyControl.ToStringBuilder(System.String)">
+            <summary>
+            Causes allocation. Creates single StringBuilder with list of assigned controls. Caller
+            takes ownership of returned StringBuilder (it is not stored internally).
+            </summary>
+        </member>
+        <member name="T:VRage.Input.MyKeys">
+            <summary>
+            Enumeration for virtual keys.
+            </summary>
+        </member>
+        <member name="M:VRage.Input.MyDirectXInput.GetMousePosition">
+            <summary>
+            Returns immediatelly current cursor position.
+            Obtains position on every call, it can get cursor data with higher rate than 60 fps
+            </summary>
+        </member>
+        <member name="M:VRage.Input.MyDirectXInput.GetGamepadKeyDirections(System.Int32@,System.Int32@)">
+            <summary>
+            Get the actual and previous gamepad key directions (use the first POV controller).
+            Returns false if this type of input is not available.
+            </summary>
+        </member>
+    </members>
+</doc>

@@ -1,49 +1,29 @@
 ﻿using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Security;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Controls;
-using System.Windows.Threading;
 using Torch;
 using Torch.API;
-using Torch.API.Plugins;
 using Torch.Managers;
-using Torch.Utils;
-using Torch.API.Event;
 using Torch.API.Managers;
-using VRage.Game;
-using VRage.Utils;
-using Sandbox.Game.Entities;
-using Sandbox.Game.Entities.Blocks;
 using Sandbox.ModAPI;
 using VRage.Game.ModAPI;
-using VRage.ModAPI;
 using System.Collections.Generic;
 using KeepInventory.Data;
-using Sandbox.Game.Entities;
-using Sandbox.Game.Entities.Blocks;
-using Sandbox.ModAPI;
-using VRage.Game.ModAPI;
-using VRage.ModAPI;
+using VRage.Game;
 
 namespace KeepInventory.Mngr
 {
-    class KeepInventoryManager : EntityManager
+    public class KeepInventoryManager : EntityManager
     {
         // Main plugin instance.
         public static KeepInventoryPlugin Instance { get; private set; }
 
         // Data storage fields.
-        Persistent<InventoryData> InventorySaveFile { get; private set; }
+        private Persistent<InventoryData> InventorySaveFile { get; set; }
         private HashSet<IMyPlayer> _queuedPlayers;
 
         public KeepInventoryManager(ITorchBase torch, KeepInventoryPlugin inst) : base(torch)
         {
             Instance = inst;
+            _queuedPlayers = new HashSet<IMyPlayer>();
 
             if (InventorySaveFile.Data == null) {
                 InventorySaveFile = new Persistent<InventoryData>(Path.Combine(inst.StoragePath, "InventorySaveFile.xml"),
@@ -89,11 +69,17 @@ namespace KeepInventory.Mngr
                 // If the player does not have an entry in storage, we also don't bother trying to restore the inventory.
                 if (!InventorySaveFile.Data.PlayerInventories.ContainsKey(player.SteamUserId)) continue;
 
-                ConnectionHelper.SendMessageToPlayer(player.SteamUserId,
-                new MessageSyncRestore
+                // Clear the player's previous inventory.
+                player.Character.GetInventory().Clear();
+
+                // For each item in the stored inventory, add it into the player's inventory.
+                foreach (IMyInventoryItem item in InventorySaveFile.Data.PlayerInventories[player.SteamUserId].GetItems())
                 {
-                    Inventory = InventorySaveFile.Data.PlayerInventories[player.SteamUserId],
-                });
+                    player.Character.GetInventory().AddItems(item.Amount, (MyObjectBuilder_PhysicalObject)item.Content);
+                }
+
+                // Now that the player has his inventory restored, remove his entry in the storage file.
+                CleanInventorySlot(player);
             }
         }
 
@@ -123,19 +109,9 @@ namespace KeepInventory.Mngr
         /// Clear a player's inventory data from storage if they have received their saved inventory.
         /// </summary>
         /// <param name="player">The player who is getting their inventory erased</param>
-        public void CleanInventorySlot(IPlayer player)
+        public void CleanInventorySlot(IMyPlayer player)
         {
-
-        }
-
-        /// <summary>
-        /// Syncs player inventory after their inventory is restored.
-        /// </summary>
-        /// <param name="steamId">The steam Id of the player getting the message</param>
-        /// <param name="inventory">The inventory to send</param>
-        public static void SendInventorySyncMessageToPlayer(ulong steamId, IMyInventory inventory)
-        {
-            MyModAPIHelper.MyMultiplayer.Static.SendMessageTo
+            InventorySaveFile.Data.PlayerInventories.Remove(player.SteamUserId);
         }
     }
 }

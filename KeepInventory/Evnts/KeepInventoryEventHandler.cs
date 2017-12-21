@@ -1,33 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Torch.API;
 using Torch.API.Event;
-using KeepInventory.Mngr;
-using KeepInventory;
-using VRage.Game.ModAPI.Interfaces;
-using VRage.Game.ModAPI.IMyEntityController;
 using VRage.Game.ModAPI;
+using Torch.API.Managers;
+using VRage.Game.ModAPI.Interfaces;
 
 namespace KeepInventory.Evnts
 {
-    class KeepInventoryEventHandler : IEventHandler
+    public class KeepInventoryEventHandler : IEventHandler
     {
         public static KeepInventoryPlugin Instance { get; private set; }
-
-        public event Action<IPlayer> PlayerJoined;
-        public event Action<IPlayer> PlayerLeft;
-        public event Action<IMyControllableEntity, IMyControllableEntity> ControlledEntityChanged;
 
         public KeepInventoryEventHandler(ITorchBase torch, KeepInventoryPlugin inst)
         {
             Instance = inst;
-
-            PlayerJoined += OnJoin;
-            PlayerLeft += OnLeave;
-            ControlledEntityChanged += OnEntitySwitch;
+            inst.Torch.Managers.GetManager<IMultiplayerManagerBase>().PlayerJoined += OnJoin;
+            inst.Torch.Managers.GetManager<IMultiplayerManagerBase>().PlayerLeft += OnLeave;
+            inst.Torch.CurrentSession.KeenSession.CameraAttachedToChanged += OnEntitySwitch;
         }
 
         /// <summary>
@@ -57,10 +46,10 @@ namespace KeepInventory.Evnts
         /// We will check if the player was queued to receive an inventory. If the player was, we will handle 
         /// it via a KeepInventoryManager call.
         /// </summary>
-        public void OnEntitySwitch(IMyControllableEntity oldEntity, IMyControllableEntity newEntity)
+        public void OnEntitySwitch(IMyCameraController oldController, IMyCameraController newController)
         {
             // Check if the player has exited the spawn screen and is controlling a character.
-            if (oldEntity == null && newEntity is IMyCharacter)
+            if (oldController == null && newController is IMyCharacter)
             {
                 // If a player has changed controlled entities from nothing to a character, we need to evaluate our queued player list.
                 Instance.InventoryManager.LoadInventoryFromSlot();
