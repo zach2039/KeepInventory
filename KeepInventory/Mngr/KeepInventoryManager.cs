@@ -17,7 +17,7 @@ namespace KeepInventory.Mngr
         public static KeepInventoryPlugin Instance { get; private set; }
 
         // Data storage fields.
-        private Persistent<InventoryData> InventorySaveFile { get; set; }
+        public Persistent<InventoryData> InventorySaveFile { get; set; }
         private HashSet<IMyPlayer> _queuedPlayers;
 
         public KeepInventoryManager(ITorchBase torch, KeepInventoryPlugin inst) : base(torch)
@@ -25,10 +25,9 @@ namespace KeepInventory.Mngr
             Instance = inst;
             _queuedPlayers = new HashSet<IMyPlayer>();
 
-            if (InventorySaveFile.Data == null) {
-                InventorySaveFile = new Persistent<InventoryData>(Path.Combine(inst.StoragePath, "InventorySaveFile.xml"),
-                    new InventoryData());
-            }
+            InventorySaveFile = Persistent<InventoryData>.Load(Path.Combine(Instance.StoragePath, "InventorySaveFile.xml"));
+
+            KeepInventoryPlugin.Log.Info("Test");
         }
 
         /// <summary>

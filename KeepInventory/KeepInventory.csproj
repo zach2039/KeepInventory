@@ -41,6 +41,7 @@
     <Reference Include="Octokit">
       <HintPath>..\..\..\..\..\..\..\Stuff\TorchServer\Octokit.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="Sandbox.Common">
       <HintPath>C:\Games\Steam\steamapps\common\SpaceEngineers\Bin64\Sandbox.Common.dll</HintPath>
@@ -53,6 +54,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -77,6 +79,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\InventoryData.cs" />
+    <Compile Include="Data\SerializableDictionary.cs" />
     <Compile Include="Evnts\KeepInventoryEventHandler.cs" />
     <Compile Include="KeepInventoryPlugin.cs" />
     <Compile Include="Mngr\KeepInventoryManager.cs" />
