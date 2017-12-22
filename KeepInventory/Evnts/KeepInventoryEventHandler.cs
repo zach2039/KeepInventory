@@ -14,9 +14,13 @@ namespace KeepInventory.Evnts
         public KeepInventoryEventHandler(ITorchBase torch, KeepInventoryPlugin inst)
         {
             Instance = inst;
-            inst.Torch.Managers.GetManager<IMultiplayerManagerBase>().PlayerJoined += OnJoin;
-            inst.Torch.Managers.GetManager<IMultiplayerManagerBase>().PlayerLeft += OnLeave;
-            inst.Torch.CurrentSession.KeenSession.CameraAttachedToChanged += OnEntitySwitch;
+        }
+
+        public void Init()
+        {
+            Instance.Torch.CurrentSession.Managers.GetManager<IMultiplayerManagerBase>().PlayerJoined += OnJoin;
+            Instance.Torch.CurrentSession.Managers.GetManager<IMultiplayerManagerBase>().PlayerLeft += OnLeave;
+            Instance.Torch.CurrentSession.KeenSession.CameraAttachedToChanged += OnEntitySwitch;
         }
 
         /// <summary>
@@ -27,6 +31,7 @@ namespace KeepInventory.Evnts
         public void OnJoin(IPlayer player)
         {
             // Call manager to handle joining player.
+            KeepInventoryPlugin.Log.Info("Player " + player.Name + " joined the server.");
             Instance.InventoryManager.QueuePlayerForInventory(player);
         }
         
@@ -38,6 +43,7 @@ namespace KeepInventory.Evnts
         public void OnLeave(IPlayer player)
         {
             // Call manager to handle leaving player.
+            KeepInventoryPlugin.Log.Info("Player " + player.Name + " left the server.");
             Instance.InventoryManager.SaveInventoryToSlot(player);
         }
 
@@ -52,6 +58,7 @@ namespace KeepInventory.Evnts
             if (oldController == null && newController is IMyCharacter)
             {
                 // If a player has changed controlled entities from nothing to a character, we need to evaluate our queued player list.
+                KeepInventoryPlugin.Log.Info("A player has respawned!");
                 Instance.InventoryManager.LoadInventoryFromSlot();
             }
         }

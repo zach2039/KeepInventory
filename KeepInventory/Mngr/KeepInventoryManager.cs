@@ -8,6 +8,7 @@ using VRage.Game.ModAPI;
 using System.Collections.Generic;
 using KeepInventory.Data;
 using VRage.Game;
+using System.Collections;
 
 namespace KeepInventory.Mngr
 {
@@ -19,6 +20,7 @@ namespace KeepInventory.Mngr
         // Data storage fields.
         public Persistent<InventoryData> InventorySaveFile { get; set; }
         private HashSet<IMyPlayer> _queuedPlayers;
+        private HashSet<IMyPlayer> _onlinePlayers;
 
         public KeepInventoryManager(ITorchBase torch, KeepInventoryPlugin inst) : base(torch)
         {
@@ -26,8 +28,6 @@ namespace KeepInventory.Mngr
             _queuedPlayers = new HashSet<IMyPlayer>();
 
             InventorySaveFile = Persistent<InventoryData>.Load(Path.Combine(Instance.StoragePath, "InventorySaveFile.xml"));
-
-            KeepInventoryPlugin.Log.Info("Test");
         }
 
         /// <summary>
@@ -38,7 +38,9 @@ namespace KeepInventory.Mngr
         {
             // Get a IMyPlayer version of the loading player to test and manipulate against.
             IMyPlayer loadedPlayer = Instance.Torch.CurrentSession.Managers.GetManager<IMultiplayerManagerBase>().GetPlayerBySteamId(player.SteamId);
-            
+
+            KeepInventoryPlugin.Log.Info("Checking to see if player " + player.Name + " has saved inventory.");
+
             // Random null check to calm nerves.
             if (loadedPlayer == null) return;
 
@@ -50,6 +52,8 @@ namespace KeepInventory.Mngr
                 // The loading player was in the game but has not yet spawned. Queue the player to recieve their inventory once they spawn in if they haved a saved inventory.
                 if (InventorySaveFile.Data.PlayerInventories.ContainsKey(player.SteamId))
                 {
+                    KeepInventoryPlugin.Log.Info("Added player " + player.Name + " to inventory restore queue!");
+
                     _queuedPlayers.Add(loadedPlayer);
                 }
             }
@@ -72,12 +76,13 @@ namespace KeepInventory.Mngr
                 player.Character.GetInventory().Clear();
 
                 // For each item in the stored inventory, add it into the player's inventory.
-                foreach (IMyInventoryItem item in InventorySaveFile.Data.PlayerInventories[player.SteamUserId].GetItems())
+                foreach (IMyInventoryItem item in InventorySaveFile.Data.PlayerInventories[player.SteamUserId])
                 {
                     player.Character.GetInventory().AddItems(item.Amount, (MyObjectBuilder_PhysicalObject)item.Content);
                 }
 
                 // Now that the player has his inventory restored, remove his entry in the storage file.
+                KeepInventoryPlugin.Log.Info("Removed player " + player.DisplayName + "'s saved inventory slot.");
                 CleanInventorySlot(player);
             }
         }
@@ -89,19 +94,34 @@ namespace KeepInventory.Mngr
         /// <param name="player">The player with an inventory that needs to be saved to storage</param>
         public void SaveInventoryToSlot(IPlayer player)
         {
+            KeepInventoryPlugin.Log.Info("Inst: " + Instance);
+            KeepInventoryPlugin.Log.Info("Torch: " + Instance.Torch);
+            KeepInventoryPlugin.Log.Info("CurrSession: " + Instance.Torch.CurrentSession);
+            KeepInventoryPlugin.Log.Info("Managers: " + Instance.Torch.CurrentSession.Managers);
+            KeepInventoryPlugin.Log.Info("MultiplayerManager: " + Instance.Torch.CurrentSession.Managers.GetManager<IMultiplayerManagerBase>());
+            KeepInventoryPlugin.Log.Info("leavingPlayer" + Instance.Torch.CurrentSession.Managers.GetManager<IMultiplayerManagerBase>().GetPlayerBySteamId(player.SteamId));
+
+
             // Get a IMyPlayer version of the leaving player to test and manipulate against.
             IMyPlayer leavingPlayer = Instance.Torch.CurrentSession.Managers.GetManager<IMultiplayerManagerBase>().GetPlayerBySteamId(player.SteamId);
+            KeepInventoryPlugin.Log.Info("Attempting to save player " + player.Name + "'s inventory.");
 
             // Random null check to calm nerves.
             if (leavingPlayer == null) return;
+            KeepInventoryPlugin.Log.Info(player.Name + " was not a null reference.");
 
             // If the player is disconnecting from a cyro chamber, we don't bother saving his inventory.
             if (leavingPlayer.Controller.ControlledEntity is IMyCryoChamber) return;
+            KeepInventoryPlugin.Log.Info(player.Name + " was not in a cryo chamber.");
+
             // If the player is dead, we also don't bother saving his inventory to storage.
             if (leavingPlayer.Character.IsDead) return;
+            KeepInventoryPlugin.Log.Info(player.Name + " was not dead.");
 
             // Now that the leaving player has passed both checks, we can save their inventory to storage.
-            InventorySaveFile.Data.PlayerInventories.Add(player.SteamId, leavingPlayer.Character.GetInventory());
+            KeepInventoryPlugin.Log.Info("Saving " + player.Name + "'s inventory to storage file.");
+            InventorySaveFile.Data.PlayerInventories.Add(player.SteamId, leavingPlayer.Character.GetInventory().GetItems());
+            InventorySaveFile.Save();
         }
 
         /// <summary>
@@ -111,6 +131,7 @@ namespace KeepInventory.Mngr
         public void CleanInventorySlot(IMyPlayer player)
         {
             InventorySaveFile.Data.PlayerInventories.Remove(player.SteamUserId);
+            InventorySaveFile.Save();
         }
     }
 }

@@ -28,15 +28,19 @@ namespace KeepInventory
         public override void Init(ITorchBase torch)
         {
             base.Init(torch);
-           
-            Log.Info("Torch:" + torch);
-            Log.Info("Inst:" + Instance);
 
-            InventoryManager = new KeepInventoryManager(torch, Instance);
-            torch.Managers.AddManager(InventoryManager);
+            InventoryManager = new KeepInventoryManager(Instance.Torch, Instance);
+            InventoryEventHandler = new KeepInventoryEventHandler(Instance.Torch, Instance);
 
-            InventoryEventHandler = new KeepInventoryEventHandler(torch, Instance);
-            torch.Managers.GetManager<IEventManager>().RegisterHandler(InventoryEventHandler);
+            Instance.Torch.Managers.AddManager(InventoryManager);
+            Instance.Torch.Managers.GetManager<IEventManager>().RegisterHandler(InventoryEventHandler);
+
+            Torch.SessionLoaded += Torch_SessionLoaded;
+        }
+
+        private void Torch_SessionLoaded()
+        {
+            InventoryEventHandler.Init();
         }
 
         public override void Dispose()
